@@ -1,13 +1,33 @@
-import fs from "fs";
-import { fileURLToPath } from "node:url";
-import path from "path";
-import { resolve } from 'node:path';
+import fs from "node:fs";
+import { pipeline } from "node:stream/promises";
+import { Transform } from "node:stream";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Just for fun, because I didn't see the output without a new line
+const newLineBuffer = Buffer.from("\n", "utf8");
 
-const read = async () => {
-  fs.createReadStream(resolve(__dirname, "./files/fileToRead.txt")).pipe(process.stdout);
-};
+async function read() {
+  const readableStream = fs.createReadStream(
+    "src/streams/files/fileToRead.txt",
+    { encoding: "utf-8" }
+  );
+
+  const addNewline = new Transform({
+    transform(chunk, encoding, callback) {
+      this.lastChunkEndsWithNewline =
+        chunk[chunk.length - 1] === newLineBuffer[0];
+
+      callback(null, chunk);
+    },
+    flush(callback) {
+      if (!this.lastChunkEndsWithNewline) {
+        callback(null, "\n");
+      } else {
+        callback();
+      }
+    },
+  });
+
+  await pipeline(readableStream, addNewline, process.stdout);
+}
 
 await read();

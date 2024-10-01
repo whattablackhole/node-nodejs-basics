@@ -1,25 +1,25 @@
 import fs from "node:fs/promises";
-import path from "path";
-import { resolve } from 'node:path';
-import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-export const rename = async (
-  rootPath = resolve(__dirname, "./files_copy/wrongFilename.txt"),
-  destPath = resolve(__dirname, "./files_copy/properFilename.md")
-) => {
-  const result = await fs.stat(destPath).catch(async (err) => {
-    if (err.code == "ENOENT") {
-      await fs.rename(rootPath, destPath).catch((err) => {
-        throw new Error("FS operation failed");
-      });
-    }
-  });
-
-  if (result) {
+const rename = async () => {
+  try {
+    await fs.stat("src/fs/files_copy/properFilename.md");
     throw new Error("FS operation failed");
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      throw err;
+    }
+  }
+
+  try {
+    await fs.rename(
+      "src/fs/files_copy/wrongFilename.txt",
+      "src/fs/files_copy/properFilename.md"
+    );
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      throw new Error("FS operation failed");
+    }
+    throw err;
   }
 };
 

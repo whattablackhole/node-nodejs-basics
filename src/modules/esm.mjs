@@ -1,8 +1,8 @@
-import { sep } from "path";
-import { release, version } from "os";
-import { createServer as createServerHttp } from "http";
+import path from "node:path";
+import { release, version } from "node:os";
+import { readFile } from "node:fs/promises";
+import { createServer as createServerHttp } from "node:http";
 import "./files/c.js";
-import { readFile } from "fs/promises";
 
 const random = Math.random();
 
@@ -20,10 +20,10 @@ if (random > 0.5) {
 
 console.log(`Release ${release()}`);
 console.log(`Version ${version()}`);
-console.log(`Path segment separator is "${sep}"`);
+console.log(`Path segment separator is "${path.sep}"`);
 
-console.log(`Path to current file is ${__filename}`);
-console.log(`Path to current directory is ${__dirname}`);
+console.log(`Path to current file is ${import.meta.filename}`);
+console.log(`Path to current directory is ${import.meta.dirname}`);
 
 const myServer = createServerHttp((_, res) => {
   res.end("Request accepted");
@@ -38,7 +38,4 @@ myServer.listen(PORT, () => {
   console.log("To terminate it, use Ctrl+C combination");
 });
 
-export default {
-  unknownObject,
-  myServer,
-};
+export { unknownObject, myServer };

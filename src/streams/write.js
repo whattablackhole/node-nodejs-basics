@@ -1,14 +1,10 @@
-import fs from "fs";
-import { fileURLToPath } from "node:url";
-import path from "path";
-import { resolve } from 'node:path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs from "node:fs";
+import { pipeline } from "node:stream/promises";
 
 const write = async () => {
-  const stream = fs.createWriteStream(resolve(__dirname, "./files/fileToWrite.txt"));
-  process.stdin.pipe(stream);
+  console.log("press Ctrl+C to exit");
+  const writeStream = fs.createWriteStream("src/streams/files/fileToWrite.txt");
+  await pipeline(process.stdin, writeStream);
 };
 
 await write();

@@ -1,25 +1,24 @@
-import fs from "fs";
-import zlib from "zlib";
-import { fileURLToPath } from "node:url";
-import path from "path";
+import fs from "node:fs";
+import zlib from "node:zlib";
 import { resolve } from "node:path";
+import { pipeline } from "node:stream/promises";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const decompress = async (
-  srcPath = resolve(__dirname, "./files/archive.gz"),
-  destPath = resolve(__dirname, "./files/fileToCompress.txt")
-) => {
+const decompress = async () => {
   const gunzip = zlib.createGunzip();
-  const inputStream = fs.createReadStream(srcPath);
-  const outputStream = fs.createWriteStream(destPath);
+
+  const inputStream = fs.createReadStream(
+    resolve(import.meta.dirname, "./files/archive.gz")
+  );
+
+  const outputStream = fs.createWriteStream(
+    resolve(import.meta.dirname, "./files/fileToCompress.txt")
+  );
 
   outputStream.on("finish", () => {
-    fs.unlink(srcPath, () => {});
+    fs.unlink(resolve(import.meta.dirname, "./files/archive.gz"), () => {});
   });
-  
-  inputStream.pipe(gunzip).pipe(outputStream);
+
+  await pipeline(inputStream, gunzip, outputStream);
 };
 
 await decompress();
